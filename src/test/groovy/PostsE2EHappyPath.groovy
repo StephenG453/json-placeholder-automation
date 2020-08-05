@@ -51,24 +51,6 @@ class PostsE2EHappyPath extends Specification {
         assert response.status == 200 : 'Post was not retrieved.'
     }
 
-//    def 'add a comment to the post' () {
-//        when:
-//        def reponse = client.post(path: 'posts/1/comments',
-//                contentType: JSON,
-//                bidy: ['postId': 10,
-//                       'id': 1,
-//                       'name': "CommentName 1",
-//                       'email': "Eliseo@gardner.biz",
-//                       'body': "test Body"])
-//
-//        then:
-//        assert response.status == 201 : 'Comment was not added.'
-//    }
-//
-//    def 'get comments' () {
-//
-//    }
-
     def 'delete the post'() {
         when:
         def response = client.delete(path: 'posts/1')
@@ -77,13 +59,7 @@ class PostsE2EHappyPath extends Specification {
         assert response.status == 204 : 'Post was not deleted.'
     }
 
-//        and:
-//        client.get(path: 'posts/1')
-//
-//        then:
-//        assert response.status == 200 : 'Entities were not retrieved.'
-
-    def 'validate entity is gone' () {
+    def 'validate post is gone' () {
         when:
         def response = getData()
 
