@@ -2,6 +2,7 @@ package ClientData;
 
 public class PostData {
 
+    private final int id = 1;
     private String postTitle = "sunt aut facere repellat provident occaecati excepturi optio reprehenderit";
     private String postBody = "quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit" +
             " molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto";
@@ -10,6 +11,10 @@ public class PostData {
 
     private String editedPostBody = "quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit" +
             " molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto EDITED";
+
+    public int getPostId() {
+        return id;
+    }
 
     public String getPostTitle() {
         return postTitle;
