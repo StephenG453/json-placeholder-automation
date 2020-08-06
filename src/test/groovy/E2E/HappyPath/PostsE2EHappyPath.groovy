@@ -1,6 +1,7 @@
 package E2E.HappyPath
 
-import ClientData.PostData
+//import ClientData.PostData
+import TestData.PostData
 import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Specification
