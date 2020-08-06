@@ -1,3 +1,5 @@
+package E2E
+
 import groovyx.net.http.RESTClient
 import spock.lang.Specification
 
