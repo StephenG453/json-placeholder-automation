@@ -1,4 +1,4 @@
-package E2E
+package E2E.HappyPath
 
 import ClientData.PostData
 import groovyx.net.http.RESTClient

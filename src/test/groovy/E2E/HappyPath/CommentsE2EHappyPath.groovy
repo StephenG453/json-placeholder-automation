@@ -1,4 +1,4 @@
-package E2E
+package E2E.HappyPath
 
 import ClientData.CommentData
 import ClientData.PostData
