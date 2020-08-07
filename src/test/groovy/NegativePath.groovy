@@ -1,3 +1,4 @@
+import TestData.CommentData
 import TestData.PostData
 import groovyx.net.http.RESTClient
 import spock.lang.Shared
@@ -8,12 +9,14 @@ import static groovyx.net.http.ContentType.JSON
 
 class NegativePath extends Specification {
 
-    @Shared PostData data
+    @Shared PostData postsData
+    @Shared CommentData commentsData
     @Shared def client
 
     def setupSpec() {
         client = new RESTClient('https://jsonplaceholder.typicode.com/')
-        data = new PostData()
+        postsData = new PostData()
+        commentsData = new CommentData()
     }
 
     def 'user should not be able to create a post with the same ID as a prior post'() {}
@@ -34,63 +37,103 @@ class NegativePath extends Specification {
 
     def 'user should not be able to write data to an invalid URL'() {}
 
-    def 'user should not be able to create a post while using an invalid JSON request format - wrong JSON keys'(String postTitle,
-    String postBody) {
+    @Unroll
+    def 'user should not be able to create an entity while using an invalid JSON request format - wrong JSON keys' (String
+            requestPath, HashMap<String, Object> requestBody) {
         expect:
-        assert sendRequestWithInvalidJSONToPostAPI(postTitle, postBody) == 201 : 'The new post was invalidly created with ' +
-        'a wrong format'
-
+        assert sendRequest(requestPath, requestBody).status == 400 : 'The invalid request was invalidly successful'
         where:
-        postTitle           | postBody
-        123                 | data.getPostBody()
-        data.getPostTitle() | 123
-        123                 | 123
+        requestPath                                    | requestBody
+        '/posts'                                       | [id : "bad ID",   //assuming ID can only be int
+                                                          title  : postsData.getPostTitle(),
+                                                          body   : postsData.getPostBody()]
+
+        '/posts'                                       | [id : postsData.getPostId(),
+                                                          title  : 123,    //assuming title can only be String
+                                                          body   : postsData.getPostBody()]
+
+        '/posts'                                       | [id : postsData.getPostId(),
+                                                          title  : postsData.getPostTitle(),
+                                                          body   : 130.5f] //assuming body can only be String
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : "bad post ID", //assuming post ID can only be int
+                                                          id     : commentsData.getCommentId(),
+                                                          name   : commentsData.getCommentName(),
+                                                          email  : commentsData.getCommentEmail(),
+                                                          body   : commentsData.getCommentBody()]
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          id     : "bad ID",    //assuming ID can only be int
+                                                          name   : commentsData.getCommentName(),
+                                                          email  : commentsData.getCommentEmail(),
+                                                          body   : commentsData.getCommentBody()]
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          id     : commentsData.getCommentId(),
+                                                          name   : 123,   //assuming name can only be String
+                                                          email  : commentsData.getCommentEmail(),
+                                                          body   : commentsData.getCommentBody()]
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          id     : commentsData.getCommentId(),
+                                                          name   : commentsData.getCommentName(),
+                                                          email  : 123.5f,  //assuming email can only be String
+                                                          body   : commentsData.getCommentBody()]
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          id     : commentsData.getCommentId(),
+                                                          name   : commentsData.getCommentName(),
+                                                          email  : commentsData.getCommentEmail(),
+                                                          body   : false]   //assuming body can only be String
     }
 
     @Unroll
-    def 'user should not be able to create a post while using an invalid JSON request format - missing JSON keys'(
-            HashMap<String, Object> json) {
+    def 'user should not be able to create an entity while using an invalid JSON request format - missing JSON keys'(
+            String requestPath, HashMap<String, Object> requestBody) {
         expect:
-        assert sendRequestWithInvalidJSONToCommentsAPI(json).status == 400 : 'The invalid request was invalidly successful'
+        assert sendRequest(requestPath, requestBody).status == 400 : 'The invalid request was invalidly successful'
 
         where:
-        json                          | _
-        [title  : data.getPostTitle(),
-         body   : data.getPostBody()] | _   //no userID - apparently the API automatically creates an ID if none if found
-        [userId : data.getPostId(),
-         body   : data.getPostBody()] | _    //no title
-        [userId : data.getPostId(),
-         title  : data.getPostTitle()]| _    //no body
+        requestPath                                    | requestBody
+        '/posts'                                       | [title  : postsData.getPostTitle(),
+                                                          body   : postsData.getPostBody()]    //no userID - apparently the API automatically creates an ID if none if found
+
+        '/posts'                                       | [userId : postsData.getPostId(),
+                                                          body   : postsData.getPostBody()]     //no title
+
+        '/posts'                                       | [userId : postsData.getPostId(),
+                                                          title  : postsData.getPostTitle()]    //no body
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          id     : commentsData.getCommentId(),
+                                                          name   : commentsData.getCommentName(),
+                                                          email  : commentsData.getCommentEmail()] //no body
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          id     : commentsData.getCommentId(),
+                                                          name   : commentsData.getCommentName(),
+                                                          body   : commentsData.getCommentBody()]  //no email
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          id     : commentsData.getCommentId(),
+                                                          email  : commentsData.getCommentEmail(),
+                                                          body   : commentsData.getCommentBody()]   //no name
+
+        '/posts' + postsData.getPostId() + '/comments' | [postId : commentsData.getCommentPostId(),
+                                                          name   : commentsData.getCommentName(),
+                                                          email  : commentsData.getCommentEmail(),
+                                                          body   : commentsData.getCommentBody()]   //no ID
+
+        '/posts' + postsData.getPostId() + '/comments' | [id     : commentsData.getCommentId(),
+                                                          name   : commentsData.getCommentName(),
+                                                          email  : commentsData.getCommentEmail(),
+                                                          body   : commentsData.getCommentBody()]   //no postID
     }
 
-    def 'user should not be able to create a comment while using an invalid JSON request format - wrong JSON keys'() {}
-
-    def 'user should not be able to create a comment while using an invalid JSON request format - missing JSON keys'() {}
-
-    def 'user should only be able to create a post with title as a string'() {}
-
-    def 'user should only be able to create a post with ID as an int'() {}
-
-    def 'user should only be able to create a post with ID as an'() {}
-
-    def sendRequestWithInvalidJSONToPostAPI(String postTitle, String postBody) {
-        def response = client.post(path: 'posts',
-                contentType: JSON,
-                body: [userId: 1,
-                       title: postTitle,
-                       body  : postBody])
-//        assert response.status == 201: 'The new post was not created.'
-        return response
-    }
-
-    def sendRequestWithInvalidJSONToCommentsAPI(HashMap<String, Object> json) {
-        def response = client.post(path: 'posts',
+    def sendRequest(String path, HashMap<String, Object> json) {
+        def response = client.post(path: path,
                 contentType: JSON,
                 body: json)
-//                body: [userId: 1,
-//                       title: postTitle,
-//                       body  : postBody])
-//                    )
         return response
     }
 
